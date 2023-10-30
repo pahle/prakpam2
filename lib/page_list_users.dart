@@ -66,10 +66,7 @@ class _PageListUsersState extends State<PageListUsers> {
           context,
           MaterialPageRoute(
             builder: (context) => PageDetailUser(
-                idUser: userData.id!,
-                userName: userData.firstName! + " " + userData.lastName!,
-                userEmail: userData.email!,
-                userImageUrl: userData.avatar!),
+                idUser: userData.id!),
           ),
         );
       },

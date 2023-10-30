@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
+import 'api_data_source.dart';
+import 'DetailUserModel.dart';
 
 class PageDetailUser extends StatelessWidget {
   final int idUser;
-  final String userName;
-  final String userEmail;
-  final String userImageUrl;
 
-  PageDetailUser({
-    Key? key,
-    required this.idUser,
-    required this.userName,
-    required this.userEmail,
-    required this.userImageUrl,
-  }) : super(key: key);
+  PageDetailUser({required this.idUser});
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +13,80 @@ class PageDetailUser extends StatelessWidget {
       appBar: AppBar(
         title: Text("User Detail"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: _buildDetailUserBody(),
+    );
+  }
+
+  Widget _buildDetailUserBody() {
+    return Container(
+      child: FutureBuilder(
+        future: ApiDataSource.instance.loadDetailUser(idUser, idUser: idUser),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasError) {
+            return _buildErrorSection();
+          }
+          if (snapshot.hasData) {
+            DetailUserModel detailUserModel =
+                DetailUserModel.fromJson(snapshot.data);
+            return _buildSuccessSection(context, detailUserModel);
+          }
+          return _buildLoadingSection();
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorSection() {
+    return Text("Error");
+  }
+
+  Widget _buildLoadingSection() {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildSuccessSection(BuildContext context, DetailUserModel data) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          _buildItemUsers(context, data.data!),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemUsers(BuildContext context, Data userData) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PageDetailUser(idUser: userData.id!),
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(16),
+        child: Row(
           children: [
-            CircleAvatar(
-              radius: 50, // Adjust the size as needed
-              backgroundImage: NetworkImage(userImageUrl),
+            Container(
+              width: 50,
+              height: 50,
+              child: Image.network(userData.avatar!),
             ),
-            SizedBox(height: 20),
-            Text(
-              userName,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            SizedBox(
+              width: 16,
             ),
-            SizedBox(height: 10),
-            Text(
-              userEmail,
-              style: TextStyle(fontSize: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("ID: ${userData.id}"),
+                Text("Email: ${userData.email}"),
+                Text("First Name: ${userData.firstName}"),
+                Text("Last Name: ${userData.lastName}"),
+              ],
             ),
           ],
         ),
